@@ -1,27 +1,33 @@
 package wx.org.intercepter.annotation;
 
+import org.apache.ibatis.annotations.One;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
+import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import org.apache.ibatis.session.Configuration;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author wuxin
  * @date 2022/02/22 00:46:36
  */
 @Intercepts({
-  @Signature(type = ResultSetHandler.class ,method = "handleResultSets",args = Statement.class),
-  @Signature(type = Executor.class,method = "update",args = {MappedStatement.class,Object.class})
+ /* @Signature(type = ResultSetHandler.class ,method = "handleResultSets",args = Statement.class),
+  @Signature(type = Executor.class,method = "update",args = {MappedStatement.class,Object.class}),*/
+  @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
 })
 public class BigDecimalScaleInterceptor implements Interceptor {
 
@@ -61,6 +67,69 @@ public class BigDecimalScaleInterceptor implements Interceptor {
     }
     if (target instanceof ResultSetHandler) {
       return processResultSet(invocation);
+    }
+    if(target instanceof StatementHandler){
+      StatementHandler statementHandler = realTarget(invocation.getTarget());
+      MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
+      MappedStatement mappedStatement = (MappedStatement) metaObject
+        .getValue("delegate.mappedStatement");
+      String id = mappedStatement.getId();
+      int i = id.lastIndexOf(".");
+      String mapper = id.substring(0, i);
+      String methodName = id.substring(i + 1, id.length());
+      Method[] declaredMethods = Class.forName(mapper).getDeclaredMethods();
+      Method m = null;
+      Map<Integer,BigDecimalScale> needProcess = new HashMap<>();
+      for (Method e : declaredMethods) {
+          if(e.getName().equals(methodName)){
+              m = e;
+            break;
+          }
+      }
+      Annotation[][] parameterAnnotations = m.getParameterAnnotations();
+      for (int j = 0; j < parameterAnnotations.length; j++) {
+        for (int k = 0; k < parameterAnnotations[j].length; k++) {
+          Annotation annotation = parameterAnnotations[j][k];
+          if(annotation instanceof BigDecimalScale){
+            needProcess.put(j,(BigDecimalScale) annotation);
+          }
+        }
+      }
+      BoundSql boundSql = (BoundSql) metaObject.getValue("delegate.boundSql");
+      Object paramObj = boundSql.getParameterObject();
+      Map<String, Object> paramList = (Map<String, Object>) paramObj;
+      List<String> strings = paramList.keySet().stream().collect(Collectors.toList());
+      for (int p = 0; p < strings.size(); p+=2) {
+        BigDecimalScale bigDecimalScale = needProcess.get(p);
+        ArrayList<Object> objects = new ArrayList<>();
+        objects.add(paramList.get(strings.get(p)));
+        objects.add(paramList.get(strings.get(p + 1)));
+
+
+        // 外面有
+        if(Objects.nonNull(bigDecimalScale)){
+          checkAnnotationIsLegal(bigDecimalScale);
+          String value = bigDecimalScale.value();
+          int roundingMode = bigDecimalScale.roundingMode();
+          for (Object o : objects) {
+            if(o instanceof BigDecimal){
+              ((BigDecimal) o).setScale(Integer.valueOf(value),roundingMode);
+            }
+            Field[] declaredFields = o.getClass().getDeclaredFields();
+            for (int g = 0; g < declaredFields.length; g++) {
+              setScale(declaredFields[g],o,bigDecimalScale);
+            }
+          }
+        }
+        for (Object e : objects) {
+          Field[] declaredFields = e.getClass().getDeclaredFields();
+          for (int s = 0; s < declaredFields.length; s++) {
+            setScale(declaredFields[s],e);
+          }
+        }
+      }
+
+
     }
     return invocation.proceed();
   }
@@ -116,8 +185,33 @@ public class BigDecimalScaleInterceptor implements Interceptor {
     return invocation.proceed();
   }
 
+  public static <T> T realTarget(Object target) {
+    if (Proxy.isProxyClass(target.getClass())) {
+      MetaObject metaObject = SystemMetaObject.forObject(target);
+      return realTarget(metaObject.getValue("h.target"));
+    }
+    return (T) target;
+  }
+
   private void setScale(Field f,Object r){
     BigDecimalScale annotation = f.getDeclaredAnnotation(BigDecimalScale.class);
+    Class<?> type = f.getType();
+    if(Objects.nonNull(annotation) && (type == BigDecimal.class)){
+      checkAnnotationIsLegal(annotation);
+      String scale = annotation.value();
+      int mode = annotation.roundingMode();
+      f.setAccessible(true);
+      try {
+        BigDecimal bigDecimal = (BigDecimal) f.get(r);
+        f.set(r,bigDecimal.setScale(Integer.valueOf(scale),mode));
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void setScale(Field f,Object r,BigDecimalScale bigDecimalScale){
+    BigDecimalScale annotation = bigDecimalScale;
     Class<?> type = f.getType();
     if(Objects.nonNull(annotation) && (type == BigDecimal.class)){
       checkAnnotationIsLegal(annotation);
