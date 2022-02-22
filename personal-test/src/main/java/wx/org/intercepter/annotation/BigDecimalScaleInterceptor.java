@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 })
 public class BigDecimalScaleInterceptor implements Interceptor {
 
-
   /**
    * Legal Rounding Mode
    */
@@ -55,8 +54,6 @@ public class BigDecimalScaleInterceptor implements Interceptor {
     }
     return invocation.proceed();
   }
-
-
 
   /**
    * Process result set to set BigDecimal Scale before return query data
