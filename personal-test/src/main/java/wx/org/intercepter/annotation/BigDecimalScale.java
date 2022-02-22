@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD,ElementType.PARAMETER})
 public @interface BigDecimalScale {
 
   String value();
