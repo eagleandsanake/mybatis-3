@@ -44,6 +44,16 @@ public class BigDecimalScaleInterceptor implements Interceptor {
   }
 
   @Override
+  public Object plugin(Object target) {
+    return Interceptor.super.plugin(target);
+  }
+
+  @Override
+  public void setProperties(Properties properties) {
+    Interceptor.super.setProperties(properties);
+  }
+
+  @Override
   public Object intercept(Invocation invocation) throws Throwable {
     Object target = invocation.getTarget();
     if (target instanceof Executor) {
@@ -137,13 +147,4 @@ public class BigDecimalScaleInterceptor implements Interceptor {
     }
   }
 
-  @Override
-  public Object plugin(Object target) {
-    return Interceptor.super.plugin(target);
-  }
-
-  @Override
-  public void setProperties(Properties properties) {
-    Interceptor.super.setProperties(properties);
-  }
 }
