@@ -16,6 +16,4 @@ public @interface BigDecimalScale {
 
   int roundingMode() default BigDecimal.ROUND_HALF_UP;
 
-  boolean activeIn() default false;
-
 }

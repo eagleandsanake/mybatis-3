@@ -10,7 +10,7 @@ public class Student {
 	private Long id;
 	private String name;
 
-	@BigDecimalScale(value = "2",roundingMode = BigDecimal.ROUND_HALF_UP)
+	@BigDecimalScale(value = "4",roundingMode = BigDecimal.ROUND_HALF_UP)
 	private BigDecimal age;
 
 	private Integer gender;

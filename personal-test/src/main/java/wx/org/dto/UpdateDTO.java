@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 public class UpdateDTO {
 
-  @BigDecimalScale(value = "3",roundingMode = BigDecimal.ROUND_UP)
+  @BigDecimalScale(value = "4",roundingMode = BigDecimal.ROUND_UP)
   private BigDecimal age;
 
   private Long id;

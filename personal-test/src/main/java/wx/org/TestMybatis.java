@@ -23,13 +23,19 @@ public class TestMybatis {
     Reader reader = Resources.getResourceAsReader("config.xml");
     // 2.建造者模式构建SqlSessionFactory，使用建造者模式，通过build的重载，精细化构造对象
     SqlSessionFactory build = new SqlSessionFactoryBuilder().build(reader);// SqlSessiongFactory构造器
+
     SqlSession openSession = build.openSession();
+
     StudentMapper mapper = openSession.getMapper(StudentMapper.class);
+
     UpdateDTO updateDTO = new UpdateDTO();
-    updateDTO.setAge(new BigDecimal(9.495453));
+    updateDTO.setAge(new BigDecimal(7.443));
     updateDTO.setId(1L);
+
     int i = mapper.updateStudentAge(updateDTO);
+
     openSession.commit();
+
     System.out.println(i);
 
   }
