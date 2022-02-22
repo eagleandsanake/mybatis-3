@@ -112,8 +112,6 @@ public class BigDecimalScaleInterceptor implements Interceptor {
           setScale(f,arg1);
         }
       }
-      args[1] = arg1;
-      invocation = new Invocation(invocation.getTarget(),invocation.getMethod(),args);
     }
     return invocation.proceed();
   }

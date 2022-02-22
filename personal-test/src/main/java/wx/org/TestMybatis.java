@@ -26,7 +26,7 @@ public class TestMybatis {
     SqlSession openSession = build.openSession();
     StudentMapper mapper = openSession.getMapper(StudentMapper.class);
     UpdateDTO updateDTO = new UpdateDTO();
-    updateDTO.setAge(new BigDecimal(9.4453));
+    updateDTO.setAge(new BigDecimal(9.495453));
     updateDTO.setId(1L);
     int i = mapper.updateStudentAge(updateDTO);
     openSession.commit();
