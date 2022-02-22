@@ -21,10 +21,10 @@ import java.util.regex.Pattern;
  */
 @Intercepts({
   @Signature(type = ResultSetHandler.class ,method = "handleResultSets",args = Statement.class),
-  @Signature(type = Executor.class,method = "wx/org/dto",args = {MappedStatement.class,Object.class})/*,
-  @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})*/
+  @Signature(type = Executor.class,method = "update",args = {MappedStatement.class,Object.class})
 })
 public class BigDecimalScaleInterceptor implements Interceptor {
+
 
   /**
    * Legal Rounding Mode
@@ -32,15 +32,15 @@ public class BigDecimalScaleInterceptor implements Interceptor {
   private static List<Integer> roundingMode;
 
   static {
-      roundingMode = new ArrayList<Integer>(){{
-        add(BigDecimal.ROUND_UP);
-        add(BigDecimal.ROUND_DOWN);
-        add(BigDecimal.ROUND_CEILING);
-        add(BigDecimal.ROUND_FLOOR);
-        add(BigDecimal.ROUND_HALF_UP);
-        add(BigDecimal.ROUND_HALF_DOWN);
-        add(BigDecimal.ROUND_HALF_EVEN);
-        add(BigDecimal.ROUND_UNNECESSARY);
+    roundingMode = new ArrayList<Integer>(){{
+      add(BigDecimal.ROUND_UP);
+      add(BigDecimal.ROUND_DOWN);
+      add(BigDecimal.ROUND_CEILING);
+      add(BigDecimal.ROUND_FLOOR);
+      add(BigDecimal.ROUND_HALF_UP);
+      add(BigDecimal.ROUND_HALF_DOWN);
+      add(BigDecimal.ROUND_HALF_EVEN);
+      add(BigDecimal.ROUND_UNNECESSARY);
     }};
   }
 
@@ -48,31 +48,14 @@ public class BigDecimalScaleInterceptor implements Interceptor {
   public Object intercept(Invocation invocation) throws Throwable {
     Object target = invocation.getTarget();
     if (target instanceof Executor) {
-        return processExecutor(invocation);
+      return processExecutor(invocation);
     }
-//    if(target instanceof StatementHandler){
-//      StatementHandler statementHandler = realTarget(invocation.getTarget());
-//      MetaObject metaObject = SystemMetaObject.forObject(statementHandler);
-//      MappedStatement mappedStatement = (MappedStatement) metaObject.getValue("delegate.mappedStatement");
-//      if (SqlCommandType.UPDATE != mappedStatement.getSqlCommandType()) {
-//        return invocation.proceed();
-//      }
-//      BoundSql boundSql = (BoundSql) metaObject.getValue("delegate.boundSql");
-//      Object paramObj = boundSql.getParameterObject();
-//    }
     if (target instanceof ResultSetHandler) {
       return processResultSet(invocation);
     }
     return invocation.proceed();
   }
 
-  @Override
-  public Object plugin(Object o) {
-    return Plugin.wrap(o, this);
-  }
-
-  @Override
-  public void setProperties(Properties properties) {}
 
 
   /**
@@ -157,14 +140,13 @@ public class BigDecimalScaleInterceptor implements Interceptor {
     }
   }
 
-  private static <T> T realTarget(Object target) {
-    if (Proxy.isProxyClass(target.getClass())) {
-      MetaObject metaObject = SystemMetaObject.forObject(target);
-      return realTarget(metaObject.getValue("h.target"));
-    }
-    return (T) target;
+  @Override
+  public Object plugin(Object target) {
+    return Interceptor.super.plugin(target);
   }
 
-
-
+  @Override
+  public void setProperties(Properties properties) {
+    Interceptor.super.setProperties(properties);
+  }
 }
