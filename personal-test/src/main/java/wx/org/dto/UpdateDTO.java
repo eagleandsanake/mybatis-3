@@ -2,6 +2,8 @@ package wx.org.dto;
 
 import wx.org.intercepter.annotation.BigDecimalScale;
 
+import javax.naming.NameNotFoundException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 
 /**
@@ -30,4 +32,32 @@ public class UpdateDTO {
   public void setId(Long id) {
     this.id = id;
   }
+}
+
+class test{
+
+
+  public static void main(String[] args) throws NoSuchFieldException {
+    Field age = UpdateDTO
+      .class.getField("age");
+    BigDecimalScale annotation = age.getAnnotation(BigDecimalScale.class);
+
+    if( annotation != null){
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+  }
+
+
+
 }
