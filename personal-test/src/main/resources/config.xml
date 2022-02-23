@@ -5,7 +5,7 @@
 <configuration>
 
   <plugins>
-      <plugin interceptor="wx.org.intercepter.annotation.BigDecimalScaleInterceptor"></plugin>
+      <plugin interceptor="wx.org.intercepter.BigDecimalScaleInterceptor"></plugin>
   </plugins>
 
   <environments default="development">

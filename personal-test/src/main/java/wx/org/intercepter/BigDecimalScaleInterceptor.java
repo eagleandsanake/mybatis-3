@@ -1,4 +1,4 @@
-package wx.org.intercepter.annotation;
+package wx.org.intercepter;
 
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -6,6 +6,7 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
+import wx.org.intercepter.annotation.BigDecimalScale;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
